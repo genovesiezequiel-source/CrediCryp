@@ -1,0 +1,108 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-\\.\\+ ]+$');
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['nombre', 'apellido', 'dni', 'email', 'role', 'createdAt', 'updatedAt', 'pais', 'documentType', 'whatsapp']) &&
+             data.nombre is string && data.nombre.size() > 0 &&
+             data.apellido is string && data.apellido.size() > 0 &&
+             data.dni is string && data.dni.size() > 0 &&
+             data.pais is string && data.pais.size() > 0 &&
+             data.documentType is string &&
+             data.role in ['user', 'admin'] &&
+             (!('limitValue' in data) || (data.limitValue is number));
+    }
+
+    function isValidCredit(data) {
+      return data.keys().hasAll(['userId', 'amount', 'status', 'kycLevel', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.amount is number && 
+             data.status in ['pending', 'approved', 'active', 'rejected'] &&
+             (!('limitValue' in data) || (data.limitValue is number));
+    }
+
+    function isValidKYC(data) {
+      return data.keys().hasAll(['userId', 'fullName', 'dob', 'documentType', 'documentNumber', 'status', 'createdAt', 'documentImageUrl', 'documentBackImageUrl', 'selfieImageUrl']) &&
+             data.userId == request.auth.uid &&
+             data.status == 'pending' &&
+             data.fullName is string && data.fullName.size() > 0 &&
+             data.documentNumber is string && data.documentNumber.size() > 0 &&
+             data.createdAt == request.time;
+    }
+
+    // --- Match Rules ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming()) && (incoming().createdAt == request.time || isAdmin());
+      allow update: if isOwner(userId) || isAdmin();
+    }
+
+    match /kyc/{userId} {
+      allow get: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId && isValidKYC(incoming()) && !exists(/databases/$(database)/documents/kyc/$(userId));
+      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    match /credits/{creditId} {
+      allow get: if isOwner(creditId) || (isSignedIn() && (resource != null && existing().userId == request.auth.uid)) || isAdmin();
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isOwner(creditId) && isValidCredit(incoming()) && (incoming().createdAt == request.time || isAdmin());
+      allow update: if isOwner(creditId) || isAdmin();
+    }
+
+    match /transactions/{transactionId} {
+      allow get: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAdmin(); // Transactions are usually system-generated
+    }
+
+    // Registry collections for uniqueness checks
+    match /registry_dni/{dni} {
+      allow get: if true; // Needed to check existence
+      allow create: if isSignedIn() && isValidId(dni);
+    }
+
+    match /registry_whatsapp/{whatsapp} {
+      allow get: if true; // Needed to check existence
+      allow create: if isSignedIn() && isValidId(whatsapp);
+    }
+
+    // Admins list
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+    }
+  }
+}

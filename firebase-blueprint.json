@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Public and private profile data for the user.",
+      "type": "object",
+      "properties": {
+        "nombre": { "type": "string", "description": "First name" },
+        "apellido": { "type": "string", "description": "Last name" },
+        "dni": { "type": "string", "description": "ID Document Number" },
+        "email": { "type": "string", "format": "email" },
+        "whatsapp": { "type": "string" },
+        "pais": { "type": "string" },
+        "codPostal": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nombre", "apellido", "dni", "email", "role", "createdAt", "updatedAt"]
+    },
+    "CreditLine": {
+      "title": "Credit Line",
+      "description": "Active or pending credit line for a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "approved", "active", "rejected"] },
+        "kycLevel": { "type": "integer", "enum": [1, 2] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "amount", "status", "kycLevel", "createdAt", "updatedAt"]
+    },
+    "Transaction": {
+      "title": "Movement Transaction",
+      "description": "Financial records of user movements.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["disbursement", "payment", "transfer"] },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["completed", "pending", "failed"] },
+        "target": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "type", "amount", "status", "timestamp"]
+    },
+    "KYC": {
+      "title": "KYC Verification",
+      "description": "Identity verification submission for a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "dob": { "type": "string", "format": "date" },
+        "documentType": { "type": "string" },
+        "documentNumber": { "type": "string" },
+        "documentImageUrl": { "type": "string" },
+        "documentBackImageUrl": { "type": "string" },
+        "selfieImageUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "fullName", "dob", "documentType", "documentNumber", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Main user records."
+    },
+    "/credits/{creditId}": {
+      "schema": "CreditLine",
+      "description": "User credit lines."
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Transaction logs for all users."
+    },
+    "/kyc/{userId}": {
+      "schema": "KYC",
+      "description": "KYC verification records for users."
+    }
+  }
+}

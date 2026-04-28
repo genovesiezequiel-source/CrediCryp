@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-dark: #0B0F1A;
+  --color-brand-blue: #10B981;
+  --color-brand-purple: #8B5CF6;
+  --color-brand-green: #10B981;
+  --color-brand-yellow: #F59E0B;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-dark text-slate-100 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-2xl border border-white/5;
+  }
+  .text-glow-green {
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  }
+  .animate-slow-spin {
+    animation: spin 8s linear infinite;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-brand-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(10px); opacity: 1; }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+/* BTCPay Button Styles */
+.btcpay-form { display: inline-flex; align-items: center; justify-content: center; } 
+.btcpay-form--inline { flex-direction: row; } 
+.btcpay-form--block { flex-direction: column; } 
+.btcpay-form--inline .submit { margin-left: 15px; } 
+.btcpay-form--block select { margin-bottom: 10px; } 
+.btcpay-form .btcpay-custom-container{ text-align: center; }
+.btcpay-custom { display: flex; align-items: center; justify-content: center; } 
+.btcpay-form .plus-minus { cursor:pointer; font-size:25px; line-height: 25px; background: rgba(255,255,255,0.1); color: white; height: 40px; width: 60px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin: auto 5px; display: inline-flex; justify-content: center; align-items: center; transition: all 0.2s; } 
+.btcpay-form .plus-minus:hover { background: rgba(255,255,255,0.3); border-color: rgba(16, 185, 129, 0.5); }
+.btcpay-form select { -moz-appearance: none; -webkit-appearance: none; appearance: none; color: rgba(255,255,255,0.6); background: transparent; border:1px solid transparent; display: block; padding: 4px; margin-left: auto; margin-right: auto; font-size: 12px; cursor: pointer; font-weight: bold; } 
+.btcpay-form select:hover { color: white; } 
+.btcpay-form option { color: #000; background: #fff; } 
+.btcpay-input-price { -moz-appearance: textfield; border: none; box-shadow: none; text-align: center; font-size: 32px; font-weight: 900; margin: auto; border-radius: 12px; line-height: 50px; background: transparent; color: white; width: 140px; }
+.btcpay-input-price::-webkit-outer-spin-button, .btcpay-input-price::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.btcpay-form .submit-container { margin-top: 20px; transition: transform 0.2s; }
+.btcpay-form .submit-container:hover { transform: translateY(-2px); }
